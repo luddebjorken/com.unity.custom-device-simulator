@@ -66,7 +66,7 @@
 .unity-device-simulator__scale-slider
 {
     margin-bottom: 5px;
-    width: 100px;
+    width: 50px;
 }
 
 .unity-device-simulator__scale-label, .unity-device-simulator__scale-manipulate-label {
@@ -79,6 +79,25 @@
     padding-top: 0px;
     align-self: Center;
     padding-left: 5px;
+}
+
+.unity-device-simulator__device_shortcut
+{
+    align-items: center;
+    justify-content: center;
+    min-width: 25px;
+    width: 25px;
+    height: 20px;
+    padding: 0px;
+    border-left-width: 1px;
+    border-right-width: 0px;
+}
+
+.unity-device-simulator__device_shortcut_image
+{
+    margin: 2px;
+    width: 16px;
+    height: 16px;
 }
 
 .unity-device-simulator__rotate-image-container {

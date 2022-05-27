@@ -12,7 +12,7 @@ namespace UnityEditor.DeviceSimulation
         public override VisualElement OnCreateUI()
         {
             var root = new VisualElement();
-            var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("packages/com.unity.device-simulator/Editor/SimulatorResources/UXML/ui_application_settings.uxml");
+            var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("packages/custom_device_simulator/Editor/SimulatorResources/UXML/ui_application_settings.uxml");
             visualTree.CloneTree(root);
 
             var systemLanguageField = root.Q<EnumField>("application-system-language");

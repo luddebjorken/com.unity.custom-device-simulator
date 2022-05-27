@@ -2,22 +2,29 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" xmlns:deviceSimulation="UnityEditor.DeviceSimulation">
     <editor:Toolbar class="unity-device-simulator__toolbar">
         <editor:ToolbarMenu name="playmode-view-menu" />
+        <VisualElement class="unity-toolbar-button unity-device-simulator__device_shortcut" name="default-apple-btn">
+            <Image class="unity-device-simulator__device_shortcut_image" style="width: 16px; height:16px" name="default-apple" />
+        </VisualElement>
+        <VisualElement class="unity-toolbar-button unity-device-simulator__device_shortcut" name="default-android-btn">
+            <Image class="unity-device-simulator__device_shortcut_image" style="width: 16px; height:16px" name="default-android" />
+        </VisualElement>
+        <VisualElement class="unity-toolbar-button unity-device-simulator__device_shortcut" name="default-tablet-btn">
+            <Image class="unity-device-simulator__device_shortcut_image" style="width: 16px; height:16px" name="default-tablet" />
+        </VisualElement>
         <VisualElement name="device-list-menu" class="unity-toolbar-menu">
             <TextElement name="selected-device-name" class="unity-toolbar-menu__text" style="max-width:180px" />
             <VisualElement class="unity-toolbar-menu__arrow" />
         </VisualElement>
-        <Label text="Scale" class="unity-toolbar-button unity-device-simulator__scale-label" />
         <SliderInt class="unity-device-simulator__scale-slider" name="scale-slider" />
         <Label class="unity-device-simulator__scale-value-label" name="scale-value-label" />
-        <editor:ToolbarToggle text="Fit to Screen" name="fit-to-screen" />
-        <Label text="Rotate" class="unity-device-simulator__rotate-label" />
+        <editor:ToolbarToggle text="Fit" name="fit-to-screen" />
         <VisualElement class="unity-toolbar-button unity-device-simulator__rotate-image-container" name="rotate-cw">
             <Image class="unity-device-simulator__rotate-cw-image" name="rotate-cw-image" />
         </VisualElement>
         <VisualElement class="unity-toolbar-button unity-device-simulator__rotate-image-container" name="rotate-ccw">
             <Image class="unity-device-simulator__rotate-ccw-image" name="rotate-ccw-image" />
         </VisualElement>
-        <editor:ToolbarToggle text="Safe Area" name="highlight-safe-area" />
+        <editor:ToolbarToggle text="Safe" name="highlight-safe-area" />
         <VisualElement class="unity-device-simulator__toolbar-align-right-container">
             <editor:ToolbarToggle text="Control Panel" name="control-panel-toggle" style="border-right-width: 0" />
         </VisualElement>

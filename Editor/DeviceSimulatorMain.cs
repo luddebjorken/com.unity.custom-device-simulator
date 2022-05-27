@@ -32,6 +32,10 @@ namespace UnityEditor.DeviceSimulation
         private DeviceInfoAsset[] m_Devices;
         public DeviceInfoAsset[] devices => m_Devices;
         public DeviceInfoAsset currentDevice => m_Devices[m_DeviceIndex];
+        public void SetDeviceFromName(string name) 
+        {
+            deviceIndex = Array.FindIndex<DeviceInfoAsset>(m_Devices, (item) => item.deviceInfo.friendlyName == name);
+        }
         public Vector2 mousePositionInUICoordinates =>
             m_TouchInput.isPointerInsideDeviceScreen ? new Vector2(m_TouchInput.pointerPosition.x, m_ScreenSimulation.Height - m_TouchInput.pointerPosition.y) : Vector2.negativeInfinity;
 

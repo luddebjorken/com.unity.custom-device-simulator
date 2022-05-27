@@ -98,11 +98,20 @@ namespace UnityEditor.DeviceSimulation
             m_Main = deviceSimulatorMain;
 
             var basePath =
-                "Packages/com.unity.device-simulator/Editor/SimulatorResources/";
+                "Packages/custom_device_simulator/Editor/SimulatorResources/";
             rootVisualElement.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>($"{basePath}/StyleSheets/styles_{(EditorGUIUtility.isProSkin ? "dark" : "light")}.uss"));
             rootVisualElement.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>($"{basePath}/StyleSheets/styles_common.uss"));
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{basePath}/UXML/ui_device_simulator.uxml");
             visualTree.CloneTree(rootVisualElement);
+
+            //Device shortcut set up
+            rootVisualElement.Q<Image>("default-apple").image = AssetDatabase.LoadAssetAtPath<Texture>($"{basePath}/Icons/apple.png");
+            rootVisualElement.Q<Image>("default-android").image = AssetDatabase.LoadAssetAtPath<Texture>($"{basePath}/Icons/android.png");
+            rootVisualElement.Q<Image>("default-tablet").image = AssetDatabase.LoadAssetAtPath<Texture>($"{basePath}/Icons/tablet.png");
+            
+            rootVisualElement.Q<VisualElement>("default-apple-btn").AddManipulator(new Clickable(() =>      m_Main.SetDeviceFromName("Apple iPhone 11")));
+            rootVisualElement.Q<VisualElement>("default-android-btn").AddManipulator(new Clickable(() =>    m_Main.SetDeviceFromName("Google Pixel 2")));
+            rootVisualElement.Q<VisualElement>("default-tablet-btn").AddManipulator(new Clickable(() =>     m_Main.SetDeviceFromName("Apple iPad Air")));
 
             // Device selection menu set up
             m_DeviceListMenu = rootVisualElement.Q<VisualElement>("device-list-menu");
