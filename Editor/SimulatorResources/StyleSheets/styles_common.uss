@@ -100,6 +100,11 @@
     height: 16px;
 }
 
+.unity-remote-selector
+{
+    border-width: 0;
+}
+
 .unity-device-simulator__rotate-image-container {
     align-items: center;
     justify-content: center;

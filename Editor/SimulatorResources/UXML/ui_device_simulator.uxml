@@ -25,6 +25,9 @@
             <Image class="unity-device-simulator__rotate-ccw-image" name="rotate-ccw-image" />
         </VisualElement>
         <editor:ToolbarToggle text="Safe" name="highlight-safe-area" />
+        <editor:ToolbarToggle text="Off" class="unity-remote-selector" name="remote-off" />
+        <editor:ToolbarToggle text="Low" class="unity-remote-selector" name="remote-low" />
+        <editor:ToolbarToggle text="High" class="unity-remote-selector" name="remote-high" />
         <VisualElement class="unity-device-simulator__toolbar-align-right-container">
             <editor:ToolbarToggle text="Control Panel" name="control-panel-toggle" style="border-right-width: 0" />
         </VisualElement>

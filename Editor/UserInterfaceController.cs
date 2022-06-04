@@ -8,6 +8,15 @@ namespace UnityEditor.DeviceSimulation
 {
     internal class UserInterfaceController
     {
+
+        private enum RemoteState
+        {
+            Off,
+            Low,
+            High
+        }
+
+
         private DeviceSimulatorMain m_Main;
         private ScreenSimulation m_ScreenSimulation;
 
@@ -77,6 +86,9 @@ namespace UnityEditor.DeviceSimulation
         private ToolbarToggle m_FitToScreenToggle;
         private ToolbarToggle m_HighlightSafeAreaToggle;
         private ToolbarToggle m_ControlPanelToggle;
+        private ToolbarToggle m_RemoteOffToggle;
+        private ToolbarToggle m_RemoteLowToggle;
+        private ToolbarToggle m_RemoteHighToggle;
 
         // Controls for inactive message.
         private VisualElement m_InactiveMsgContainer;
@@ -88,6 +100,7 @@ namespace UnityEditor.DeviceSimulation
         private VisualElement m_DeviceViewContainer;
         private DeviceView m_DeviceView;
 
+
         // Control Panel
         private float m_ControlPanelWidth;
         private readonly Dictionary<string, Foldout> m_PluginFoldouts = new Dictionary<string, Foldout>();
@@ -95,6 +108,7 @@ namespace UnityEditor.DeviceSimulation
 
         public UserInterfaceController(DeviceSimulatorMain deviceSimulatorMain, VisualElement rootVisualElement, SimulatorState serializedState, PluginController pluginController, TouchEventManipulator touchEventManipulator)
         {
+            EditorApplication.playModeStateChanged += OnPlayModeStateChange;
             m_Main = deviceSimulatorMain;
 
             var basePath =
@@ -150,6 +164,19 @@ namespace UnityEditor.DeviceSimulation
             m_HighlightSafeArea = serializedState.highlightSafeAreaEnabled;
             m_HighlightSafeAreaToggle.SetValueWithoutNotify(HighlightSafeArea);
 
+            // Remote buttons setup
+            m_RemoteOffToggle = rootVisualElement.Q<ToolbarToggle>("remote-off");
+            m_RemoteLowToggle = rootVisualElement.Q<ToolbarToggle>("remote-low");
+            m_RemoteHighToggle = rootVisualElement.Q<ToolbarToggle>("remote-high");
+
+            m_RemoteOffToggle.RegisterValueChangedCallback((a) =>   { if (a.newValue) SetRemoteState(RemoteState.Off); });
+            m_RemoteLowToggle.RegisterValueChangedCallback((a) =>   { if (a.newValue) SetRemoteState(RemoteState.Low); });
+            m_RemoteHighToggle.RegisterValueChangedCallback((a) =>  { if (a.newValue) SetRemoteState(RemoteState.High); });
+
+            m_RemoteOffToggle.SetEnabled(false);
+            m_RemoteLowToggle.SetEnabled(false);
+            m_RemoteHighToggle.SetEnabled(false);
+            
             // Inactive message set up
             m_InactiveMsgContainer = rootVisualElement.Q<VisualElement>("inactive-msg-container");
             var closeInactiveMsg = rootVisualElement.Q<Image>("close-inactive-msg");
@@ -190,6 +217,68 @@ namespace UnityEditor.DeviceSimulation
 
             UpdateScrollbars();
             InitPluginUI(pluginController, serializedState);
+        }
+
+        private void OnPlayModeStateChange(PlayModeStateChange newState)
+        {
+            switch (newState)
+            {
+                case PlayModeStateChange.EnteredEditMode:
+                    m_RemoteOffToggle.SetEnabled(false);
+                    m_RemoteLowToggle.SetEnabled(false);
+                    m_RemoteHighToggle.SetEnabled(false);
+                    break;
+                case PlayModeStateChange.EnteredPlayMode:
+                    m_RemoteOffToggle.SetEnabled(true);
+                    m_RemoteLowToggle.SetEnabled(true);
+                    m_RemoteHighToggle.SetEnabled(true);
+                    LoadRemoteState();
+                    break;
+            }
+        }
+
+        private void LoadRemoteState()
+        {
+            RemoteState currentState = EditorSettings.unityRemoteDevice == "None" ? RemoteState.Off : EditorSettings.unityRemoteResolution == "Downsize" ? RemoteState.Low : RemoteState.High;
+            SetRemoteState(currentState);
+        }
+
+        private void SetRemoteState(RemoteState state)
+        {
+            switch(state)
+            {
+                case RemoteState.Off:
+                    EditorSettings.unityRemoteDevice = "None";
+                    m_RemoteOffToggle.value = true;
+                    m_RemoteLowToggle.value = (false);
+                    m_RemoteHighToggle.value = (false);
+                    break;
+                case RemoteState.Low:
+                    EditorSettings.unityRemoteDevice = "Any Android Device";
+                    EditorSettings.unityRemoteCompression = "JPEG";
+                    EditorSettings.unityRemoteResolution = "Downsize";
+                    m_RemoteOffToggle.value = (false);
+                    m_RemoteLowToggle.value = true;
+                    m_RemoteHighToggle.value = (false);
+                    if (!m_Main.TrySetRemoteDevice(true, () => SetRemoteState(RemoteState.Off))) ResetRemoteRadioButtons();
+                    break;
+                case RemoteState.High:
+                    EditorSettings.unityRemoteDevice = "Any Android Device";
+                    EditorSettings.unityRemoteResolution = "Normal";
+                    EditorSettings.unityRemoteCompression = "PNG";
+                    m_RemoteOffToggle.value = (false);
+                    m_RemoteLowToggle.value = (false);
+                    m_RemoteHighToggle.value = true;
+                    if (!m_Main.TrySetRemoteDevice(true, () => SetRemoteState(RemoteState.Off))) ResetRemoteRadioButtons();
+                    break;
+            }
+        }
+
+        private void ResetRemoteRadioButtons()
+        {
+            m_RemoteOffToggle.value = true;
+            m_RemoteLowToggle.value = false;
+            m_RemoteHighToggle.value = false;
         }
 
         private void InitPluginUI(PluginController pluginController, SimulatorState serializedState)

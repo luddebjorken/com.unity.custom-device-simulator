@@ -1,13 +1,19 @@
 using System;
+using System.Collections;
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Unity.DeviceSimulator;
+using UnityEditorInternal;
+using System.Threading.Tasks;
 
 namespace UnityEditor.DeviceSimulation
 {
     internal class DeviceSimulatorMain : IDisposable
     {
+        const float REMOTE_RETRY_TIMEOUT = 5;
+
         private ScreenSimulation m_ScreenSimulation;
         private SystemInfoSimulation m_SystemInfoSimulation;
         private readonly DeviceSimulator m_DeviceSimulator;
@@ -20,7 +26,6 @@ namespace UnityEditor.DeviceSimulation
         private bool m_ApplicationSimulationEnabled;
 
         public Vector2 targetSize => new Vector2(m_ScreenSimulation.currentResolution.width, m_ScreenSimulation.currentResolution.height);
-
         public RenderTexture displayTexture
         {
             set
@@ -32,10 +37,45 @@ namespace UnityEditor.DeviceSimulation
         private DeviceInfoAsset[] m_Devices;
         public DeviceInfoAsset[] devices => m_Devices;
         public DeviceInfoAsset currentDevice => m_Devices[m_DeviceIndex];
+
         public void SetDeviceFromName(string name) 
         {
-            deviceIndex = Array.FindIndex<DeviceInfoAsset>(m_Devices, (item) => item.deviceInfo.friendlyName == name);
+            deviceIndex = Array.FindIndex(m_Devices, (item) => item.deviceInfo.friendlyName == name);
         }
+        public bool TrySetRemoteDevice(bool retry = true, Action onFailCallback = null)
+        {
+            if (!Application.isPlaying) return false;
+
+            if (InternalEditorUtility.remoteScreenWidth <= 0 || InternalEditorUtility.remoteScreenHeight <= 0)
+            {
+                if (retry)
+                {
+                    GameObject.FindObjectOfType<MonoBehaviour>().StartCoroutine(RetrySetRemoteDevice(onFailCallback));
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            int index = remoteIndex;
+            devices[index].deviceInfo.screens[0].width = (int)InternalEditorUtility.remoteScreenWidth;
+            devices[index].deviceInfo.screens[0].height = (int)InternalEditorUtility.remoteScreenHeight;
+            deviceIndex = index;
+            return true;
+        }
+
+        private IEnumerator RetrySetRemoteDevice(Action onFailCallback)
+        {
+            for (int i = 0; i < REMOTE_RETRY_TIMEOUT/10; i++)
+            {
+                yield return new WaitForSeconds(0.1f);
+                if (TrySetRemoteDevice(false))
+                    yield break;
+            }
+            onFailCallback?.Invoke();
+        }
+
         public Vector2 mousePositionInUICoordinates =>
             m_TouchInput.isPointerInsideDeviceScreen ? new Vector2(m_TouchInput.pointerPosition.x, m_ScreenSimulation.Height - m_TouchInput.pointerPosition.y) : Vector2.negativeInfinity;
 
@@ -50,10 +90,24 @@ namespace UnityEditor.DeviceSimulation
             }
         }
 
+        public int remoteIndex
+        {
+            get
+            {
+                return Array.FindIndex(m_Devices, (item) => item.deviceInfo.friendlyName == "Remote");
+            }
+        }
+
         public DeviceSimulatorMain(SimulatorState serializedState, VisualElement rootVisualElement)
         {
+            var sizesType = typeof(Editor).Assembly.GetType("UnityEditor.GameViewSizes");
+            var singleType = typeof(ScriptableSingleton<>).MakeGenericType(sizesType);
+            var instanceProp = singleType.GetProperty("instance");
+
             if (serializedState == null)
                 serializedState = new SimulatorState();
+
+
             m_Devices = DeviceLoader.LoadDevices();
 
             InitDeviceIndex(serializedState);
